@@ -1,0 +1,19 @@
+*~
+# hidden files
+.* 
+!/.gitignore
+# weird backups that lyx produces
+\#.*\# 
+*.gif
+*.jpg
+*.svg
+*.swp
+*.png
+*.pdf
+*.exe
+iter_*
+sim_*
+graph_sim_*
+graph_iter_*
+*.csv
+x*
