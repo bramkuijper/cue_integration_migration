@@ -3,6 +3,7 @@
 #include "individual.hpp"
 
 Individual::Individual(Parameters const &parms, bool const is_female) :
+    is_female{is_female},
     an{0.5 * parms.an_init, 0.5 * parms.an_init},
     bn{0.5 * parms.bn_init, 0.5 * parms.bn_init},
     ax{0.5 * parms.ax_init, 0.5 * parms.ax_init},
@@ -10,11 +11,11 @@ Individual::Individual(Parameters const &parms, bool const is_female) :
     at{0.5 * parms.at_init, 0.5 * parms.at_init},
     bt{0.5 * parms.bt_init, 0.5 * parms.bt_init},
     anu{0.5 * parms.anu_init, 0.5 * parms.anu_init},
-    bnu{0.5 * parms.bnu_init, 0.5 * parms.bnu_init},
-    is_female{is_female}
+    bnu{0.5 * parms.bnu_init, 0.5 * parms.bnu_init}
 {}
 
 Individual::Individual(Individual const &other) :
+    is_female{other.is_female},
     an{other.an[0],other.an[1]},
     bn{other.bn[0],other.bn[1]},
     ax{other.ax[0],other.ax[1]},
@@ -23,8 +24,7 @@ Individual::Individual(Individual const &other) :
     bt{other.bt[0],other.bt[1]},
     anu{other.anu[0],other.anu[1]},
     bnu{other.bnu[0],other.bnu[1]},
-    resources{other.resources},
-    is_female{other.is_female}
+    resources{other.resources}
 {}
 
 // birth constructor
@@ -37,7 +37,7 @@ Individual::Individual(
     // set up bernoulli distribution to 
     // randomly sample parental alleles
     std::bernoulli_distribution random_segregator{0.5};
-    std::uniform_real_distribution unif{0.0,1.0};
+    std::uniform_real_distribution <double> unif{0.0,1.0};
     std::normal_distribution <double> normal{0.0,1.0};
 
     is_female = unif(rng_r) < 0.5;
@@ -124,6 +124,20 @@ Individual::Individual(
     } // end for allele_idx
 
 } // end birth constructor
+
+double Individual::pr_fly(
+                double const n, // density
+                double const x, // resources
+                double const t, // time
+                double const p) // predator y/n
+{
+    double pr_fly_val_exp{0.0};
+
+    pr_fly_val_exp += 0.5 * (1);
+
+    return(1.0 / (1.0 + std::exp(-pr_fly_val_exp)));
+
+} // end 
 
 // overload the assignment operator
 void Individual::operator=(Individual const &other)

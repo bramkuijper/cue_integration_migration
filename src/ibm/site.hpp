@@ -13,6 +13,7 @@ class Site
         std::vector<Individual> juveniles;
 
         double resources{0.0};
+        double predator_density{0.0};
 
         // initiation constructor
         Site(

@@ -52,6 +52,18 @@ class Individual
 
         void operator=(Individual const &other);
 
+        // start flying yes or no
+        double pr_fly(
+                double const n, // density
+                double const x, // resources
+                double const t, // time
+                double const p // predator y/n
+                );
+
+        // once flying actually leave
+        double pr_leave_given_fly(
+                double const nflying
+                );
 };
 
 

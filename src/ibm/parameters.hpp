@@ -22,6 +22,7 @@ class Parameters
         std::string file_name{"sim_migration_cues"};
 
         double init_resources_site{10.0};
+        double init_predator_density{10.0};
 
         unsigned int n_sites{10};
 

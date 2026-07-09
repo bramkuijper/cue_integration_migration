@@ -39,12 +39,16 @@ class Simulation
         // current generation
         unsigned int generation{0};
 
+        unsigned int ecological_time_idx{0};
+
         void reproduce();
         void write_data();
         void write_parameters();
         void write_data_headers();
 
         void initialise_sites();
+
+        void migrate();
 
     public:
         // initialize the simulation

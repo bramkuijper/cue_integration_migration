@@ -17,6 +17,7 @@ Simulation::Simulation(Parameters const &params) :
 void Simulation::initialise_sites()
 {
     // fill the first site with the whole population
+    // they then depart and move to different sites
     sites[0] = Site(par.N/2, par.N/2, par);
 } // end initialise_sites()
 
@@ -38,6 +39,14 @@ void Simulation::run()
             write_data();
         }
 
+        for (ecological_time_idx = 0;
+                ecological_time_idx < par.max_season_time_steps;
+                ++ecological_time_idx)
+        {
+            // go around all sites and move individuals around
+            migrate();
+        }
+
         // replace the current generation
         reproduce();
 
@@ -47,72 +56,44 @@ void Simulation::run()
         
 } // end run_simulation()
 
+// reproduction
+// only individuals in the final site 
+// contribute to fitness
 void Simulation::reproduce()
 {
-    if (individuals.size() < 1)
-    {
-        write_data();
-        write_parameters();
-        exit(1);
-    }
 
 } // end reproduce()
 
-void Simulation::write_data()
+// migrate individuals across stop over sites
+void Simulation::migrate()
 {
-    double mean_t{0.0};
-    double ss_t{0.0};
-    double mean_p{0.0};
-    double ss_p{0.0};
-    double sum_pt{0.0};
-
-    double t,p;
-
-    for (auto male_iterator{males.begin()};
-            male_iterator != males.end();
-            ++male_iterator)
+    for (unsigned site_idx{0};
+            site_idx < par.n_sites;
+            ++site_idx)
     {
-        t = 0.5 * (male_iterator->t[0] + male_iterator->t[1]);
-        p = 0.5 * (male_iterator->p[0] + male_iterator->p[1]);
-        mean_t += t;
-        mean_p += p;
-        ss_t += t*t;
-        ss_p += p*p;
-        sum_pt += p*t;
-    }
+        // 1.go over all individuals in a site
+        // and calculate prob of leaving
+        for (auto male_iter{sites[site_idx].males.begin()};
+                male_iter != sites[site_idx].males.end();
+                ++male_iter)
+        {
+
+
+
+        }
     
-    for (auto female_iterator{females.begin()};
-            female_iterator != females.end();
-            ++female_iterator)
-    {
-        t = 0.5 * (female_iterator->t[0] + female_iterator->t[1]);
-        p = 0.5 * (female_iterator->p[0] + female_iterator->p[1]);
-        mean_t += t;
-        mean_p += p;
-        ss_t += t*t;
-        ss_p += p*p;
-        sum_pt += p*t;
-    }
 
-    unsigned int n = static_cast<unsigned int>(males.size() + females.size());
 
-    mean_t /= n;
-    mean_p /= n;
 
-    double var_t = ss_t / n - mean_t * mean_t;
-    double var_p = ss_p / n - mean_p * mean_p;
+        // 2. then let them fly in the air
+        // 3. then move them around
+    } // end for site idx
+} // end migrate()
 
-    double cov_pt = sum_pt / n - mean_p * mean_t;
 
-    data_file << generation << ";" 
-        << mean_t << ";" 
-        << mean_p << ";" 
-        << var_t << ";" 
-        << var_p << ";"
-        << cov_pt << ";"
-        << fraction_females_survive << ";"
-        << fraction_males_survive << std::endl;
-} // end write_data()
+
+void Simulation::write_data()
+{}
 
 void Simulation::write_data_headers()
 {
@@ -125,18 +106,5 @@ void Simulation::write_parameters()
     data_file << std::endl << std::endl
         << "seed;" << seed << ";" << std::endl
         << "N;" << par.N << ";" << std::endl
-        << "max_generation;" << par.max_generation << ";" << std::endl
-        << "n_males_sampled;" << par.n_males_sampled << ";" << std::endl
-        << "mu_t;" << par.mu_t << ";" << std::endl
-        << "mu_p;" << par.mu_p << ";" << std::endl
-        << "max_mut_p;" << par.max_mut_p << ";" << std::endl
-        << "max_mut_t;" << par.max_mut_t << ";" << std::endl
-        << "biast;" << par.biast << ";" << std::endl
-        << "a;" << par.a << ";" << std::endl
-        << "b;" << par.b << ";" << std::endl
-        << "c;" << par.c << ";" << std::endl
-        << "only_positive;" << par.only_positive << ";" << std::endl
-        << "bias_negative;" << par.bias_negative << ";" << std::endl
-        << "init_t;" << par.init_t << ";" << std::endl
-        << "init_p;" << par.init_p << ";" << std::endl;
+        << "max_generation;" << par.max_generation << ";" << std::endl;
 }
