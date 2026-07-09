@@ -10,7 +10,20 @@ class Parameters
         unsigned int N{5000};
 
         // duration of the simulation
-        unsigned int max_generation{20000};
+        unsigned int max_generation{100};
+
+        // time steps in season
+        unsigned int max_season_time_steps{50};
+
+        // print data each data_print_interval generation
+        // to prevent getting massive data files
+        unsigned int data_print_interval{10};
+
+        std::string file_name{"sim_migration_cues"};
+
+        double init_resources_site{10.0};
+
+        unsigned int n_sites{10};
 
         double mu_an{0.02};
         double an_init{0.0};

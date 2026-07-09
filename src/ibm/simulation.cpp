@@ -11,9 +11,16 @@ Simulation::Simulation(Parameters const &params) :
     par{params}, // copy over the parameters
     data_file{par.file_name}, // initialize the data file to write output to
     uniform{0.0,1.0}, // initialize the uniform distribution 
-    individuals{par.N, Individual(par)} // initialize all males
+    sites(par.n_sites,Site(0,0,params)) // initialize the uniform distribution 
 {}
 
+void Simulation::initialise_sites()
+{
+    // fill the first site with the whole population
+    sites[0] = Site(par.N/2, par.N/2, par);
+} // end initialise_sites()
+
+// run the actual simulation
 void Simulation::run()
 {
     write_data_headers();

@@ -6,7 +6,7 @@
 #include <random>
 #include <fstream>
 #include "parameters.hpp"
-#include "individual.hpp"
+#include "site.hpp"
 
 class Simulation
 {
@@ -34,9 +34,7 @@ class Simulation
         // uniform distribution
         std::uniform_real_distribution<double> uniform;
 
-        // population of males, females and offspring
-        std::vector <Individual> adults{};
-        std::vector <Individual> offspring{};
+        std::vector <Site> sites{};
 
         // current generation
         unsigned int generation{0};
@@ -45,6 +43,8 @@ class Simulation
         void write_data();
         void write_parameters();
         void write_data_headers();
+
+        void initialise_sites();
 
     public:
         // initialize the simulation

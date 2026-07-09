@@ -8,6 +8,8 @@ class Individual
 {
     public:
 
+        bool is_female{true};
+
         // diploid loci 
         //
         // reaction norm to population density on the ground
@@ -36,7 +38,7 @@ class Individual
         double resources{0.0};
         // default constructor, used when we initialize
         // the simulation at t = 0
-        Individual(Parameters const &parms);
+        Individual(Parameters const &parms, bool const is_female);
 
         // copy constructor
         Individual(Individual const &other);

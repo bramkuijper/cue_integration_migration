@@ -2,7 +2,7 @@
 #include "parameters.hpp"
 #include "individual.hpp"
 
-Individual::Individual(Parameters const &parms) :
+Individual::Individual(Parameters const &parms, bool const is_female) :
     an{0.5 * parms.an_init, 0.5 * parms.an_init},
     bn{0.5 * parms.bn_init, 0.5 * parms.bn_init},
     ax{0.5 * parms.ax_init, 0.5 * parms.ax_init},
@@ -10,7 +10,8 @@ Individual::Individual(Parameters const &parms) :
     at{0.5 * parms.at_init, 0.5 * parms.at_init},
     bt{0.5 * parms.bt_init, 0.5 * parms.bt_init},
     anu{0.5 * parms.anu_init, 0.5 * parms.anu_init},
-    bnu{0.5 * parms.bnu_init, 0.5 * parms.bnu_init}
+    bnu{0.5 * parms.bnu_init, 0.5 * parms.bnu_init},
+    is_female{is_female}
 {}
 
 Individual::Individual(Individual const &other) :
@@ -22,7 +23,8 @@ Individual::Individual(Individual const &other) :
     bt{other.bt[0],other.bt[1]},
     anu{other.anu[0],other.anu[1]},
     bnu{other.bnu[0],other.bnu[1]},
-    resources{other.resources}
+    resources{other.resources},
+    is_female{other.is_female}
 {}
 
 // birth constructor
@@ -37,6 +39,8 @@ Individual::Individual(
     std::bernoulli_distribution random_segregator{0.5};
     std::uniform_real_distribution unif{0.0,1.0};
     std::normal_distribution <double> normal{0.0,1.0};
+
+    is_female = unif(rng_r) < 0.5;
 
     an[0] = mother.an[random_segregator(rng_r)];
     an[1] = father.an[random_segregator(rng_r)];
@@ -87,17 +91,56 @@ Individual::Individual(
         {
             bx[allele_idx] = normal(rng_r) * params.sdmu;
         }
+        
+        if (unif(rng_r) < params.mu_at) 
+        {
+            at[allele_idx] = normal(rng_r) * params.sdmu;
+        }
+        
+        if (unif(rng_r) < params.mu_bt) 
+        {
+            bt[allele_idx] = normal(rng_r) * params.sdmu;
+        }
+        
+        if (unif(rng_r) < params.mu_ap) 
+        {
+            ap[allele_idx] = normal(rng_r) * params.sdmu;
+        }
+        
+        if (unif(rng_r) < params.mu_bp) 
+        {
+            bp[allele_idx] = normal(rng_r) * params.sdmu;
+        }
+        
+        if (unif(rng_r) < params.mu_anu) 
+        {
+            anu[allele_idx] = normal(rng_r) * params.sdmu;
+        }
+        
+        if (unif(rng_r) < params.mu_bnu) 
+        {
+            bnu[allele_idx] = normal(rng_r) * params.sdmu;
+        }
     } // end for allele_idx
 
 } // end birth constructor
 
+// overload the assignment operator
 void Individual::operator=(Individual const &other)
 {
     for (unsigned int allele_idx{0};
             allele_idx < 2;
             ++allele_idx)
     {
-        p[allele_idx] = other.p[allele_idx];
-        t[allele_idx] = other.t[allele_idx];
+        an[allele_idx] = other.an[allele_idx];
+        bn[allele_idx] = other.bn[allele_idx];
+        ax[allele_idx] = other.ax[allele_idx];
+        bx[allele_idx] = other.bx[allele_idx];
+        at[allele_idx] = other.at[allele_idx];
+        bt[allele_idx] = other.bt[allele_idx];
+        anu[allele_idx] = other.anu[allele_idx];
+        bnu[allele_idx] = other.bnu[allele_idx];
     }
-} 
+    resources = other.resources;
+    is_female = other.is_female;
+} // end overloaded = operator
