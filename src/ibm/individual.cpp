@@ -4,6 +4,7 @@
 
 Individual::Individual(Parameters const &parms, bool const is_female) :
     is_female{is_female},
+    is_airborne{false},
     an{0.5 * parms.an_init, 0.5 * parms.an_init},
     bn{0.5 * parms.bn_init, 0.5 * parms.bn_init},
     ax{0.5 * parms.ax_init, 0.5 * parms.ax_init},
@@ -16,6 +17,7 @@ Individual::Individual(Parameters const &parms, bool const is_female) :
 
 Individual::Individual(Individual const &other) :
     is_female{other.is_female},
+    is_airborne{other.is_airborne},
     an{other.an[0],other.an[1]},
     bn{other.bn[0],other.bn[1]},
     ax{other.ax[0],other.ax[1]},
@@ -126,10 +128,10 @@ Individual::Individual(
 } // end birth constructor
 
 double Individual::pr_fly(
-                double const n, // density
+                unsigned const n, // density
                 double const x, // resources
                 double const t, // time
-                double const p) // predator y/n
+                double const p) // predator density
 {
     double pr_fly_val_exp{0.0};
 
@@ -157,4 +159,5 @@ void Individual::operator=(Individual const &other)
     }
     resources = other.resources;
     is_female = other.is_female;
+    is_airborne = other.is_airborne;
 } // end overloaded = operator

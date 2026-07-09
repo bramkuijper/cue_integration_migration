@@ -8,7 +8,8 @@ class Individual
 {
     public:
 
-        bool is_female{true};
+        bool is_female{true}; // sex
+        bool is_airborne{false}; // whether individual is airborne or not
 
         // diploid loci 
         //
@@ -34,8 +35,9 @@ class Individual
         double anu[2]{0.0,0.0};
         double bnu[2]{0.0,0.0};
         
-
         double resources{0.0};
+
+
         // default constructor, used when we initialize
         // the simulation at t = 0
         Individual(Parameters const &parms, bool const is_female);
@@ -54,10 +56,10 @@ class Individual
 
         // start flying yes or no
         double pr_fly(
-                double const n, // density
+                unsigned const n, // density
                 double const x, // resources
-                double const t, // time
-                double const p // predator y/n
+                unsigned const t, // time
+                double const p // predator density
                 );
 
         // once flying actually leave

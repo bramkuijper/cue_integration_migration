@@ -67,25 +67,64 @@ void Simulation::reproduce()
 // migrate individuals across stop over sites
 void Simulation::migrate()
 {
+    unsigned dens;
+
+    unsigned n_airborne{0};
+
     for (unsigned site_idx{0};
-            site_idx < par.n_sites;
+            site_idx < (par.n_sites - 1); // final site is site of arrival
             ++site_idx)
     {
+        dens = sites[site_idx].females.size() +
+                sites[site_idx].males.size(); 
+
+        // reset things
+        n_airborne = 0;
+
         // 1.go over all individuals in a site
         // and calculate prob of leaving
         for (auto male_iter{sites[site_idx].males.begin()};
                 male_iter != sites[site_idx].males.end();
                 ++male_iter)
         {
-
-
-
-        }
+            if (uniform(rng_r) < 
+                    male_iter->pr_fly(
+                        dens,
+                        male_iter->resources,
+                        ecological_time_idx,
+                        sites[site_idx].predator_density))
+            {
+                ++n_airborne;
+                male_iter->is_airborne = true;
+            }
+        } // end male_iter
+        
+        for (auto female_iter{sites[site_idx].females.begin()};
+                female_iter != sites[site_idx].females.end();
+                ++female_iter)
+        {
+            if (uniform(rng_r) < 
+                    female_iter->pr_fly(
+                        dens,
+                        female_iter->resources,
+                        ecological_time_idx,
+                        sites[site_idx].predator_density))
+            {
+                ++n_airborne;
+                female_iter->is_airborne = true;
+            }
+        } // end female_iter
     
-
-
-
         // 2. then let them fly in the air
+        for (auto male_iter{sites[site_idx].males.begin()};
+                male_iter != sites[site_idx].males.end();
+                ++male_iter)
+        {
+            departing_males[site_idx].:w
+        }
+        
+
+
         // 3. then move them around
     } // end for site idx
 } // end migrate()
@@ -93,7 +132,9 @@ void Simulation::migrate()
 
 
 void Simulation::write_data()
-{}
+{
+
+}
 
 void Simulation::write_data_headers()
 {

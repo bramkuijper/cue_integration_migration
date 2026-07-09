@@ -10,7 +10,8 @@ class Site
     public:
         std::vector<Individual> females;
         std::vector<Individual> males;
-        std::vector<Individual> juveniles;
+        std::vector<Individual> departing_females;
+        std::vector<Individual> departing_males;
 
         double resources{0.0};
         double predator_density{0.0};
