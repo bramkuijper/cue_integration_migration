@@ -30,6 +30,7 @@ class Simulation
 
         // the file to write statistics to 
         std::ofstream data_file;
+        std::ofstream data_file_migration;
 
         // uniform distribution
         std::uniform_real_distribution<double> uniform;
@@ -41,8 +42,11 @@ class Simulation
 
         unsigned int ecological_time_idx{0};
 
+        std::vector < std::vector < unsigned > > stats_sites{};
+
         void reproduce();
         void write_data();
+        void write_data_migration();
         void write_parameters();
         void write_data_headers();
 
@@ -55,6 +59,9 @@ class Simulation
         double group_size_flight_survival(
                 double const resources,
                 unsigned int const group_size); 
+
+        // calculate the numbers of individuals in each site
+        void calculate_stats_sites();
 
     public:
         // initialize the simulation

@@ -1,0 +1,287 @@
+#LyX 2.5 created this file. For more info see https://www.lyx.org/
+\lyxformat 643
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children no
+\language american
+\language_package default
+\inputencoding utf8
+\fontencoding auto
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_roman_osf false
+\font_sans_osf false
+\font_typewriter_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\float_placement class
+\float_alignment class
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification default
+\crossref_package refstyle
+\use_formatted_ref 0
+\use_minted 0
+\use_lineno 0
+\backgroundcolor none
+\fontcolor none
+\notefontcolor lightgray
+\boxbgcolor red
+\table_border_color default
+\table_odd_row_color default
+\table_even_row_color default
+\table_alt_row_colors_start 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tablestyle default
+\tracking_changes false
+\output_changes false
+\change_bars false
+\postpone_fragile_content true
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\docbook_table_output 0
+\docbook_mathml_prefix 1
+\docbook_mathml_version 0
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+further cues to integrate:
+\end_layout
+
+\begin_layout Standard
+- resources other
+\end_layout
+
+\begin_layout Standard
+- individuals trading off personal information vs individual information - Levene's patch model,
+ so that we have two choices and then individuals use social vs individual information whether to go A vs B.
+ 
+\end_layout
+
+\begin_layout Standard
+So ideally we want two plots:
+ individuals paying attention to resources and resources of others vs not.
+ Second plot about 
+\end_layout
+
+\begin_layout Standard
+Novelty about personal information vs private information - homing pigeon data tends to show although you get an averaging,
+ what are information leaders holding?
+ 
+\end_layout
+
+\begin_layout Standard
+- How wrong is the cue compared to the other individuals - this would be a learning dynamic.
+\end_layout
+
+\begin_layout Standard
+- Strength of cue 
+\end_layout
+
+\begin_layout Standard
+- Matching of cues
+\end_layout
+
+\begin_layout Section
+WP1:
+ Cue integration model of migration
+\end_layout
+
+\begin_layout Standard
+Life cycle:
+ individual moves from point 1 to point 
+\begin_inset Formula $n$
+\end_inset
+
+,
+ with the possibility of landing on 
+\begin_inset Formula $n-2$
+\end_inset
+
+ stopover sites in between.
+ 
+\end_layout
+
+\begin_layout Standard
+Key goals:
+ assess influence of public vs private information in state,
+ with the prediction that as migration progresses they should pay more attention to private information,
+ as opposed to public information.
+ We also want to evaluate drivers of the decision to go alone in groups vs solitary:
+ risk of predation,
+ social information,
+ or simply similar environmental information.
+\end_layout
+
+\begin_layout Standard
+The probability 
+\begin_inset Formula $f_{t}$
+\end_inset
+
+ to take off is then a function of various cues,
+ namely individual condition 
+\begin_inset Formula $x$
+\end_inset
+
+,
+ time of the season 
+\begin_inset Formula $t$
+\end_inset
+
+,
+ the density 
+\begin_inset Formula $n$
+\end_inset
+
+ of individuals currently present in the meadow on the ground,
+ or the presence of predation 
+\begin_inset Formula $p$
+\end_inset
+
+,
+ distance to destination,
+ less uncertainty of destination,
+ cues from heterospecifics.
+ 
+\begin_inset Formula 
+\begin{align*}
+f_{t} & =\frac{1}{1+\mathrm{e}^{-b_{n}\left(n-a_{n}\right)-b_{x}\left(x-a_{x}\right)-b_{t}\left(t-a_{t}\right)-b_{p}\left(p-a_{p}\right)}}.
+\end{align*}
+
+\end_inset
+
+Once in the air individuals then assess the situation by seeing how many individuals are in the air.
+ We then have the probility 
+\begin_inset Formula $g_{t}$
+\end_inset
+
+ to continue flying dependent on the individuals 
+\begin_inset Formula $\nu$
+\end_inset
+
+ in the air at time 
+\begin_inset Formula $t$
+\end_inset
+
+,
+ which is given by
+\begin_inset Formula 
+\begin{align*}
+g_{t} & =\frac{1}{1+\mathrm{e}^{-b_{\nu}\left(\nu-a_{\nu}\right)-b_{xf}\left(x-a_{xf}\right)}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Whether individuals receive cues by calling,
+ 
+\end_layout
+
+\begin_layout Standard
+Choice of patch is then the social information part,
+ vs dilutation of risk of predation,
+ vary the individual.
+ Social information where individuals choose two destination sites and then assess how individuals make a collective decision re the destination there.
+ 
+\end_layout
+
+\begin_layout Subsection
+Resource dynamic
+\end_layout
+
+\begin_layout Standard
+Individuals start with a resource level 
+\begin_inset Formula $r_{0}$
+\end_inset
+
+,
+ which will increase by an amount of 
+\begin_inset Formula $g$
+\end_inset
+
+ by each day that they do not fly.
+ However,
+ once airborne and flying,
+ resources degrees by an amount 
+\begin_inset Formula $f$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+WP2:
+ different consensus mechanisms of departure negotiation
+\end_layout
+
+\begin_layout Standard
+Spoonbills signalling before they go,
+ noctornal birds also 
+\end_layout
+
+\begin_layout Section
+WP3:
+ stopover site model
+\end_layout
+
+\begin_layout Standard
+Long distance vs short distance migraiton model,
+ 
+\end_layout
+
+\end_body
+\end_document

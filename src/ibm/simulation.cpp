@@ -12,8 +12,10 @@ Simulation::Simulation(Parameters const &params) :
     rng_r{seed}, // now use the random seed to initialize a random number generator
     par{params}, // copy over the parameters
     data_file{par.file_name}, // initialize the data file to write output to
+    data_file_migration{par.file_name + "_migration"}, // initialize the data file to write output to
     uniform{0.0,1.0}, // initialize the uniform distribution 
-    sites(par.n_sites,Site(0,0,params)) // initialize the uniform distribution 
+    sites(par.n_sites,Site(0,0,params)), // initialize all the sites
+    stats_sites(2, std::vector <unsigned> (par.n_sites, 0)) // initialize the site statistics
 {}
 
 void Simulation::initialise_sites()
@@ -151,7 +153,7 @@ void Simulation::ready_to_migrate()
     double resources_airborne;
 
     for (unsigned site_idx{0};
-            site_idx < (par.n_sites - 1); // final site is site of arrival
+            site_idx < par.n_sites - 1; // final site is site of arrival
             ++site_idx)
     {
         dens = static_cast<unsigned>(sites[site_idx].females.size() +
@@ -179,10 +181,15 @@ void Simulation::ready_to_migrate()
                         ecological_time_idx,
                         sites[site_idx].predator_density))
             {
+                male_iter->resources -= par.f;
                 ++n_airborne;
                 resources_airborne += male_iter->resources;
                 male_iter->is_airborne = true;
             }
+            else {
+                male_iter->resources += par.g;
+            }
+
         } // end male_iter
         
         for (auto female_iter{sites[site_idx].females.begin()};
@@ -373,15 +380,92 @@ void Simulation::move_between_sites()
     }
 } // end move_between_sites()
 
+
+void Simulation::calculate_stats_sites()
+{
+    // first set all stats to 0
+    for (unsigned sex_idx{0};
+            sex_idx < 2;
+            ++sex_idx)
+    {
+        std::fill(
+                stats_sites[sex_idx].begin(),
+                stats_sites[sex_idx].end(),0);
+    }
+
+    for (unsigned site_idx{0};
+            site_idx < par.n_sites;
+            ++site_idx)
+    {
+        stats_sites[0][site_idx] = 
+            sites[site_idx].males.size();
+        
+        stats_sites[0][site_idx] = 
+            sites[site_idx].females.size();
+    }
+
+}
+
+// write all the migration data
+void Simulation::write_data_migration()
+{
+    // aux variable to keep track of resources
+    double resources;
+    for (unsigned site_idx{0}; site_idx < par.n_sites; ++site_idx)
+    {
+        for (auto male_iter{sites[site_idx].males.begin()};
+                    male_iter != sites[site_idx].males.end();
+                    ++male_iter)
+        {
+            resources += male_iter->resources;
+        }
+
+        data_file_migration << generation << ";"
+            << ecological_time_idx << ";"
+            << "male;" 
+            << site_idx << ";"
+            << sites[site_idx].males.size() << ";" 
+            << resources << ";"
+            << std::endl;
+        
+        resources = 0;
+        
+        for (auto female_iter{sites[site_idx].females.begin()};
+                    female_iter != sites[site_idx].females.end();
+                    ++female_iter)
+        {
+            resources += female_iter->resources;
+        }
+
+        
+        data_file_migration << generation << ";"
+            << ecological_time_idx << ";"
+            << "female;" 
+            << site_idx << ";"
+            << sites[site_idx].females.size() << ";" 
+            << resources << ";"
+            << std::endl;
+    }
+} // write_data_migration
+
 void Simulation::write_data()
 {
+    unsigned n_female{0};
 
+    data_file << generation;
+
+
+
+
+
+    data_file << std::endl;
 }
 
 void Simulation::write_data_headers()
 {
-    data_file << "generation;mean_t;mean_p;var_t;var_p;cov_pt;frac_female_survive;frac_male_survive"
-        << std::endl;
+    data_file << std::endl;
+
+    data_file_migration << "generation;ecological_time;sex;site;n;resources;" << std::endl;
 } // end write_data_headers()
 
 void Simulation::write_parameters()
