@@ -55,8 +55,22 @@ class Parameters
 
         double mu_bnu{0.02};
         double bnu_init{0.02};
+        
+        double mu_axo{0.02};
+        double axo_init{0.0};
+
+        double mu_bxo{0.02};
+        double bxo_init{0.02};
 
         double sdmu{0.02};
+
+        // flight parameters
+        double pr_base_flight_survive{0.1};
+        double flight_survive_scale{0.7};
+        double flight_survive_power{1.0};
+        double flight_survive_max_size{50.0};
+
+        double max_resources{100};
 };
 
 #endif

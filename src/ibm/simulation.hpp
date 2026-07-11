@@ -48,7 +48,13 @@ class Simulation
 
         void initialise_sites();
 
-        void migrate();
+        void ready_to_migrate();
+
+        void move_between_sites();
+
+        double group_size_flight_survival(
+                double const resources,
+                unsigned int const group_size); 
 
     public:
         // initialize the simulation

@@ -1,7 +1,9 @@
 #include <cassert>
 #include <random>
 #include <iostream>
+#include <cmath>
 #include "simulation.hpp"
+#include "site.hpp"
 
 
 Simulation::Simulation(Parameters const &params) :
@@ -44,7 +46,8 @@ void Simulation::run()
                 ++ecological_time_idx)
         {
             // go around all sites and move individuals around
-            migrate();
+            ready_to_migrate();
+            move_between_sites();
         }
 
         // replace the current generation
@@ -56,30 +59,112 @@ void Simulation::run()
         
 } // end run_simulation()
 
+// TODO: dealing with resources
+
 // reproduction
 // only individuals in the final site 
 // contribute to fitness
+// with reproduction sexual and dependent
+// on the remaining resources of each individual
 void Simulation::reproduce()
 {
+    std::vector <double> male_resource_distribution{};
+    std::vector <double> female_resource_distribution{};
+    
+    // get resource distribution among all the females
+    for (auto female_iter{sites[par.n_sites - 1].females.begin()};
+            female_iter != sites[par.n_sites - 1].females.end();
+            ++female_iter)
+    {
+        female_resource_distribution.push_back(female_iter->resources);
+    }
 
+    // get resource distribution among all the males
+    for (auto male_iter{sites[par.n_sites - 1].males.begin()};
+            male_iter != sites[par.n_sites - 1].males.end();
+            ++male_iter)
+    {
+        male_resource_distribution.push_back(male_iter->resources);
+    }
+
+    std::discrete_distribution <unsigned> female_sampler(
+            female_resource_distribution.begin(),
+            female_resource_distribution.end());
+
+    std::discrete_distribution <unsigned> male_sampler(
+            male_resource_distribution.begin(),
+            male_resource_distribution.end());
+
+    // aux variables to store father and mother
+    unsigned male_idx, female_idx;
+
+    // clear all females and males in the first patch
+    assert(par.n_sites > 1);
+
+    sites[0].females.clear();
+    sites[0].males.clear();
+
+    for (unsigned int newborn_idx{0};
+            newborn_idx < par.N;
+            ++newborn_idx)
+    {
+        male_idx = male_sampler(rng_r);
+        female_idx = female_sampler(rng_r);
+
+        Individual offspring(
+                sites[par.n_sites - 1].females[female_idx],
+                sites[par.n_sites - 1].males[male_idx],
+                rng_r,
+                par);
+
+        if (offspring.is_female)
+        {
+            sites[0].females.push_back(offspring);
+        }
+        else
+        {
+            sites[0].males.push_back(offspring);
+        }
+    }
+    // now remove all the other females and males from the other sites
+    for (unsigned site_idx{1};
+            site_idx < par.n_sites;
+            ++site_idx)
+    {
+        sites[site_idx].females.clear();
+        sites[site_idx].males.clear();
+    }
 } // end reproduce()
 
-// migrate individuals across stop over sites
-void Simulation::migrate()
+// evaluate an individual's readiness to 
+// migrate to a different site
+void Simulation::ready_to_migrate()
 {
+    // aux variable reflecting the densit
+    // before take-off of a site
     unsigned dens;
 
-    unsigned n_airborne{0};
+    // aux variable tracking
+    // current number airborne in a site
+    unsigned n_airborne;
+
+    double resources_airborne;
 
     for (unsigned site_idx{0};
             site_idx < (par.n_sites - 1); // final site is site of arrival
             ++site_idx)
     {
-        dens = sites[site_idx].females.size() +
-                sites[site_idx].males.size(); 
+        dens = static_cast<unsigned>(sites[site_idx].females.size() +
+                sites[site_idx].males.size()); 
+
+        // check whether departing individuals have 
+        // indeed departed
+        assert(sites[site_idx].departing_males.size() == 0);
+        assert(sites[site_idx].departing_females.size() == 0);
 
         // reset things
         n_airborne = 0;
+        resources_airborne = 0.0;
 
         // 1.go over all individuals in a site
         // and calculate prob of leaving
@@ -95,6 +180,7 @@ void Simulation::migrate()
                         sites[site_idx].predator_density))
             {
                 ++n_airborne;
+                resources_airborne += male_iter->resources;
                 male_iter->is_airborne = true;
             }
         } // end male_iter
@@ -111,25 +197,181 @@ void Simulation::migrate()
                         sites[site_idx].predator_density))
             {
                 ++n_airborne;
+                resources_airborne += female_iter->resources;
                 female_iter->is_airborne = true;
             }
         } // end female_iter
-    
-        // 2. then let them fly in the air
+  
+        // make average o
+        resources_airborne /= n_airborne;
+
+        // 2. while airborne see
+        // whether they indeed leave
         for (auto male_iter{sites[site_idx].males.begin()};
                 male_iter != sites[site_idx].males.end();
-                ++male_iter)
+                )
         {
-            departing_males[site_idx].:w
-        }
+            if (uniform(rng_r) < 
+                    male_iter->pr_depart(
+                        n_airborne,
+                        resources_airborne
+                        ))
+            {
+                sites[site_idx].departing_males.push_back(
+                    *male_iter
+                        );
+
+                std::swap(*male_iter, 
+                        sites[site_idx].males.back());
+                sites[site_idx].males.pop_back();
+            } 
+            else 
+            {
+                ++male_iter;
+            }
+        } // end for male iter()
         
+        for (auto female_iter{sites[site_idx].females.begin()};
+                female_iter != sites[site_idx].females.end();
+                )
+        {
+            if (uniform(rng_r) < 
+                    female_iter->pr_depart(
+                        n_airborne,
+                        resources_airborne
+                        ))
+            {
+                sites[site_idx].departing_females.push_back(
+                    *female_iter
+                        );
 
-
-        // 3. then move them around
+                std::swap(*female_iter, 
+                        sites[site_idx].females.back());
+                sites[site_idx].females.pop_back();
+            } 
+            else 
+            {
+                ++female_iter;
+            }
+        } // end for male iter()
     } // end for site idx
 } // end migrate()
 
+// survival during flight
+double Simulation::group_size_flight_survival(
+        double const focal_resources,
+        unsigned int const group_size)
+{
+    double pr_survive{
+        par.pr_base_flight_survive * focal_resources / par.max_resources
+            + 
+            par.flight_survive_scale * 
+                std::pow(static_cast<double>(group_size) /
+                            par.flight_survive_max_size, 
+                                par.flight_survive_power)};
 
+    return(pr_survive);
+} // end group_size_flight_survival
+
+// movement from one site to another and paying costs
+void Simulation::move_between_sites()
+{
+    // aux variable to store
+    // current flight group size
+    unsigned flight_group_size;
+
+    // now we need to go backwards across sites
+    // to move individuals over and calculate their
+    // survival probabilities
+    for (unsigned site_idx{par.n_sites - 1};
+            site_idx > 0; 
+            --site_idx)
+    {
+        flight_group_size = 
+            static_cast<unsigned>(sites[site_idx - 1].departing_females.size()
+                    +
+                    sites[site_idx - 1].departing_males.size()
+                    );
+
+        // have females in a flight survive or not
+        for (auto flying_female_iterator{
+                sites[site_idx - 1].departing_females.begin()};
+                flying_female_iterator != 
+                    sites[site_idx - 1].departing_females.end();
+                    // addition to iterator within loop
+                )
+        {
+            // calculate mortality (1 - pr_survive)
+            // hence we now need to like at numbers
+            // sampled from uniform distributions that
+            // are larger than
+            if (uniform(rng_r) > 
+                    group_size_flight_survival(
+                        flying_female_iterator->resources,
+                        flight_group_size
+                        ))
+            {
+                // ok delete this female by 
+                // swapping with the one at the end of stack
+                std::swap(*flying_female_iterator, 
+                        sites[site_idx - 1].departing_females.back());
+                sites[site_idx - 1].departing_females.pop_back();
+            }
+            else
+            {
+                ++flying_female_iterator;
+            }
+        }
+        
+        // now have males on a flight surviving or not
+        for (auto flying_male_iterator{
+                sites[site_idx - 1].departing_males.begin()};
+                flying_male_iterator != 
+                    sites[site_idx - 1].departing_males.end();
+                    // addition to iterator within loop
+                )
+        {
+            // calculate mortality (1 - pr_survive)
+            // hence we now need to like at numbers
+            // sampled from uniform distributions that
+            // are larger than
+            if (uniform(rng_r) > 
+                    group_size_flight_survival(
+                        flying_male_iterator->resources,
+                        flight_group_size
+                        ))
+            {
+                // ok delete this female by 
+                // swapping with the one at the end of stack
+                std::swap(*flying_male_iterator, 
+                        sites[site_idx - 1].departing_males.back());
+                sites[site_idx - 1].departing_males.pop_back();
+            }
+            else
+            {
+                ++flying_male_iterator;
+            }
+        }
+
+        // append surviving departing females 
+        // from site at position
+        // site_idx - 1 to females 
+        // at position site_idx
+        sites[site_idx].females.insert(
+                sites[site_idx].females.end(),
+                sites[site_idx - 1].departing_females.begin(),
+                sites[site_idx - 1].departing_females.end());
+
+        sites[site_idx - 1].departing_females.clear();
+
+        sites[site_idx].males.insert(
+                sites[site_idx].males.end(),
+                sites[site_idx - 1].departing_males.begin(),
+                sites[site_idx - 1].departing_males.end());
+        
+        sites[site_idx - 1].departing_males.clear();
+    }
+} // end move_between_sites()
 
 void Simulation::write_data()
 {

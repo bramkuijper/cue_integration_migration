@@ -34,6 +34,12 @@ class Individual
         // already in the air
         double anu[2]{0.0,0.0};
         double bnu[2]{0.0,0.0};
+       
+        // reaction norm to continue flying
+        // dependent on resource levels of others
+        // already in the air
+        double axo[2]{0.0,0.0};
+        double bxo[2]{0.0,0.0};
         
         double resources{0.0};
 
@@ -54,17 +60,16 @@ class Individual
 
         void operator=(Individual const &other);
 
+        double pr_depart(
+                unsigned const n_airborne,
+                double const resources_other);
+
         // start flying yes or no
         double pr_fly(
                 unsigned const n, // density
                 double const x, // resources
                 unsigned const t, // time
                 double const p // predator density
-                );
-
-        // once flying actually leave
-        double pr_leave_given_fly(
-                double const nflying
                 );
 };
 

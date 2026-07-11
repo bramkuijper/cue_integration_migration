@@ -11,8 +11,12 @@ Individual::Individual(Parameters const &parms, bool const is_female) :
     bx{0.5 * parms.bx_init, 0.5 * parms.bx_init},
     at{0.5 * parms.at_init, 0.5 * parms.at_init},
     bt{0.5 * parms.bt_init, 0.5 * parms.bt_init},
+    ap{0.5 * parms.ap_init, 0.5 * parms.ap_init},
+    bp{0.5 * parms.bp_init, 0.5 * parms.bp_init},
     anu{0.5 * parms.anu_init, 0.5 * parms.anu_init},
-    bnu{0.5 * parms.bnu_init, 0.5 * parms.bnu_init}
+    bnu{0.5 * parms.bnu_init, 0.5 * parms.bnu_init},
+    axo{0.5 * parms.axo_init, 0.5 * parms.axo_init},
+    bxo{0.5 * parms.bxo_init, 0.5 * parms.bxo_init}
 {}
 
 Individual::Individual(Individual const &other) :
@@ -26,6 +30,8 @@ Individual::Individual(Individual const &other) :
     bt{other.bt[0],other.bt[1]},
     anu{other.anu[0],other.anu[1]},
     bnu{other.bnu[0],other.bnu[1]},
+    axo{other.axo[0],other.axo[1]},
+    bxo{other.bxo[0],other.bxo[1]},
     resources{other.resources}
 {}
 
@@ -68,6 +74,11 @@ Individual::Individual(
     anu[1] = father.anu[random_segregator(rng_r)];
     bnu[0] = mother.bnu[random_segregator(rng_r)];
     bnu[1] = father.bnu[random_segregator(rng_r)];
+    
+    axo[0] = mother.axo[random_segregator(rng_r)];
+    axo[1] = father.axo[random_segregator(rng_r)];
+    bxo[0] = mother.bxo[random_segregator(rng_r)];
+    bxo[1] = father.bxo[random_segregator(rng_r)];
 
     // cycle through alleles
     // and mutate them
@@ -123,21 +134,46 @@ Individual::Individual(
         {
             bnu[allele_idx] = normal(rng_r) * params.sdmu;
         }
+        
+        if (unif(rng_r) < params.mu_axo) 
+        {
+            axo[allele_idx] = normal(rng_r) * params.sdmu;
+        }
+        
+        if (unif(rng_r) < params.mu_bxo) 
+        {
+            bxo[allele_idx] = normal(rng_r) * params.sdmu;
+        }
     } // end for allele_idx
-
 } // end birth constructor
+
+
+// the probability that individuals indeed depart
+// after taking off from a site
+double Individual::pr_depart(
+        unsigned const n_airborne,
+        double const resources_other)
+{
+    double exponent{0.5 * (bnu[0] + bnu[1]) * 
+        (n_airborne  - 0.5 * (anu[0] + anu[1]))
+        + 0.5 * (bxo[0] + bxo[1]) * (resources_other - 0.5 * (axo[0] + axo[1]))};
+
+    return(1.0 / (1.0 + std::exp(-exponent)));
+} // end pr_depart
+
 
 double Individual::pr_fly(
                 unsigned const n, // density
                 double const x, // resources
-                double const t, // time
+                unsigned const t, // time
                 double const p) // predator density
 {
-    double pr_fly_val_exp{0.0};
+    double exponent{0.5 * (bn[0] + bn[1]) * (n  - 0.5 * (an[0] + an[1]))
+        + 0.5 * (bx[0] + bx[1]) * (x - 0.5 * (ax[0] + ax[1]))
+        + 0.5 * (bt[0] + bt[1]) * (t - 0.5 * (at[0] + at[1]))
+        + 0.5 * (bp[0] + bp[1]) * (p - 0.5 * (ap[0] + ap[1]))};
 
-    pr_fly_val_exp += 0.5 * (1);
-
-    return(1.0 / (1.0 + std::exp(-pr_fly_val_exp)));
+    return(1.0 / (1.0 + std::exp(-exponent)));
 
 } // end 
 
@@ -156,6 +192,8 @@ void Individual::operator=(Individual const &other)
         bt[allele_idx] = other.bt[allele_idx];
         anu[allele_idx] = other.anu[allele_idx];
         bnu[allele_idx] = other.bnu[allele_idx];
+        axo[allele_idx] = other.axo[allele_idx];
+        bxo[allele_idx] = other.bxo[allele_idx];
     }
     resources = other.resources;
     is_female = other.is_female;
