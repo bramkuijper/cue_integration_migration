@@ -70,7 +70,10 @@ class Parameters
         double flight_survive_power{1.0};
         double flight_survive_max_size{50.0};
 
-        double max_resources{100};
+        double min_resources{0.0};
+
+        double f{3.0}; // cost of flying
+        double g{1.0}; // gain of foraging
 };
 
 #endif

@@ -15,7 +15,7 @@ Simulation::Simulation(Parameters const &params) :
     data_file_migration{par.file_name + "_migration"}, // initialize the data file to write output to
     uniform{0.0,1.0}, // initialize the uniform distribution 
     sites(par.n_sites,Site(0,0,params)), // initialize all the sites
-    stats_sites(2, std::vector <unsigned> (par.n_sites, 0)) // initialize the site statistics
+    average_group_size_per_site(par.n_sites,0.0) // vector for group flight stats
 {}
 
 void Simulation::initialise_sites()
@@ -186,7 +186,8 @@ void Simulation::ready_to_migrate()
                 resources_airborne += male_iter->resources;
                 male_iter->is_airborne = true;
             }
-            else {
+            else 
+            {
                 male_iter->resources += par.g;
             }
 
@@ -203,9 +204,14 @@ void Simulation::ready_to_migrate()
                         ecological_time_idx,
                         sites[site_idx].predator_density))
             {
+                female_iter->resources -= par.f;
                 ++n_airborne;
                 resources_airborne += female_iter->resources;
                 female_iter->is_airborne = true;
+            } 
+            else
+            {
+                female_iter->resources += par.g;
             }
         } // end female_iter
   
@@ -269,8 +275,13 @@ double Simulation::group_size_flight_survival(
         double const focal_resources,
         unsigned int const group_size)
 {
+    if (focal_resources < par.min_resources)
+    {
+        return(0);
+    }
+
     double pr_survive{
-        par.pr_base_flight_survive * focal_resources / par.max_resources
+        par.pr_base_flight_survive 
             + 
             par.flight_survive_scale * 
                 std::pow(static_cast<double>(group_size) /
@@ -287,6 +298,14 @@ void Simulation::move_between_sites()
     // current flight group size
     unsigned flight_group_size;
 
+    for (unsigned site_idx{0};
+            site_idx < par.n_sites;
+            ++site_idx)
+    {
+        average_group_size_per_site[site_idx] = 0.0;
+    }
+
+
     // now we need to go backwards across sites
     // to move individuals over and calculate their
     // survival probabilities
@@ -299,6 +318,8 @@ void Simulation::move_between_sites()
                     +
                     sites[site_idx - 1].departing_males.size()
                     );
+
+        average_group_size_per_site[site_idx - 1] += flight_group_size;
 
         // have females in a flight survive or not
         for (auto flying_female_iterator{
@@ -323,6 +344,8 @@ void Simulation::move_between_sites()
                 std::swap(*flying_female_iterator, 
                         sites[site_idx - 1].departing_females.back());
                 sites[site_idx - 1].departing_females.pop_back();
+
+                ++sites[site_idx - 1].n_mortality;
             }
             else
             {
@@ -353,6 +376,8 @@ void Simulation::move_between_sites()
                 std::swap(*flying_male_iterator, 
                         sites[site_idx - 1].departing_males.back());
                 sites[site_idx - 1].departing_males.pop_back();
+                
+                ++sites[site_idx - 1].n_mortality;
             }
             else
             {
@@ -381,30 +406,6 @@ void Simulation::move_between_sites()
 } // end move_between_sites()
 
 
-void Simulation::calculate_stats_sites()
-{
-    // first set all stats to 0
-    for (unsigned sex_idx{0};
-            sex_idx < 2;
-            ++sex_idx)
-    {
-        std::fill(
-                stats_sites[sex_idx].begin(),
-                stats_sites[sex_idx].end(),0);
-    }
-
-    for (unsigned site_idx{0};
-            site_idx < par.n_sites;
-            ++site_idx)
-    {
-        stats_sites[0][site_idx] = 
-            sites[site_idx].males.size();
-        
-        stats_sites[0][site_idx] = 
-            sites[site_idx].females.size();
-    }
-
-}
 
 // write all the migration data
 void Simulation::write_data_migration()
@@ -425,6 +426,8 @@ void Simulation::write_data_migration()
             << "male;" 
             << site_idx << ";"
             << sites[site_idx].males.size() << ";" 
+            << average_group_size_per_site[site_idx] << ";" 
+            << sites[site_idx].n_mortality << ";" 
             << resources << ";"
             << std::endl;
         
@@ -443,6 +446,8 @@ void Simulation::write_data_migration()
             << "female;" 
             << site_idx << ";"
             << sites[site_idx].females.size() << ";" 
+            << average_group_size_per_site[site_idx] << ";" 
+            << sites[site_idx].n_mortality << ";" 
             << resources << ";"
             << std::endl;
     }
@@ -452,18 +457,260 @@ void Simulation::write_data()
 {
     unsigned n_female{0};
 
-    data_file << generation;
+    double mean_resources{0.0};
+    double ss_resources{0.0};
+    
+    double mean_an{0.0};
+    double mean_bn{0.0};
+    double mean_ax{0.0};
+    double mean_bx{0.0};
+    double mean_at{0.0};
+    double mean_bt{0.0};
+    double mean_ap{0.0};
+    double mean_bp{0.0};
+    double mean_anu{0.0};
+    double mean_bnu{0.0};
+    double mean_axo{0.0};
+    double mean_bxo{0.0};
 
+    double ss_an{0.0};
+    double ss_bn{0.0};
+    double ss_ax{0.0};
+    double ss_bx{0.0};
+    double ss_at{0.0};
+    double ss_bt{0.0};
+    double ss_ap{0.0};
+    double ss_bp{0.0};
+    double ss_anu{0.0};
+    double ss_bnu{0.0};
+    double ss_axo{0.0};
+    double ss_bxo{0.0};
 
+    double x;
 
+    unsigned n{0};
 
+    for (auto site_iter{sites.begin()};
+            site_iter != sites.end();
+            ++site_iter)
+    {
+        n_female += static_cast<unsigned>(
+                site_iter->females.size());
 
-    data_file << std::endl;
-}
+        n+= static_cast<unsigned>(
+                site_iter->females.size() +
+                site_iter->males.size()
+                );
+
+        for (auto female_iter{site_iter->females.begin()};
+                female_iter != site_iter->females.end();
+                ++female_iter)
+        {
+            x = female_iter->resources;
+            mean_resources += x;
+            ss_resources += x*x;
+            
+            x = 0.5 * (female_iter->an[0] + female_iter->an[1]);
+            mean_an += x;
+            ss_an += x*x;
+            
+            x = 0.5 * (female_iter->bn[0] + female_iter->bn[1]);
+            mean_bn += x;
+            ss_bn += x*x;
+            
+            x = 0.5 * (female_iter->ax[0] + female_iter->ax[1]);
+            mean_ax += x;
+            ss_ax += x*x;
+            
+            x = 0.5 * (female_iter->bx[0] + female_iter->bx[1]);
+            mean_bx += x;
+            ss_bx += x*x;
+            
+            x = 0.5 * (female_iter->at[0] + female_iter->at[1]);
+            mean_at += x;
+            ss_at += x*x;
+            
+            x = 0.5 * (female_iter->bt[0] + female_iter->bt[1]);
+            mean_bt += x;
+            ss_bt += x*x;
+            
+            x = 0.5 * (female_iter->ap[0] + female_iter->ap[1]);
+            mean_ap += x;
+            ss_ap += x*x;
+            
+            x = 0.5 * (female_iter->bp[0] + female_iter->bp[1]);
+            mean_bp += x;
+            ss_bp += x*x;
+            
+            x = 0.5 * (female_iter->anu[0] + female_iter->anu[1]);
+            mean_anu += x;
+            ss_anu += x*x;
+            
+            x = 0.5 * (female_iter->bnu[0] + female_iter->bnu[1]);
+            mean_bnu += x;
+            ss_bnu += x*x;
+            
+            x = 0.5 * (female_iter->axo[0] + female_iter->axo[1]);
+            mean_axo += x;
+            ss_axo += x*x;
+            
+            x = 0.5 * (female_iter->bxo[0] + female_iter->bxo[1]);
+            mean_bxo += x;
+            ss_bxo += x*x;
+        }
+
+        for (auto male_iter{site_iter->females.begin()};
+                male_iter != site_iter->females.end();
+                ++male_iter)
+        {
+            x = male_iter->resources;
+            mean_resources += x;
+            ss_resources += x*x;
+            
+            x = 0.5 * (male_iter->an[0] + male_iter->an[1]);
+            mean_an += x;
+            ss_an += x*x;
+            
+            x = 0.5 * (male_iter->bn[0] + male_iter->bn[1]);
+            mean_bn += x;
+            ss_bn += x*x;
+            
+            x = 0.5 * (male_iter->ax[0] + male_iter->ax[1]);
+            mean_ax += x;
+            ss_ax += x*x;
+            
+            x = 0.5 * (male_iter->bx[0] + male_iter->bx[1]);
+            mean_bx += x;
+            ss_bx += x*x;
+            
+            x = 0.5 * (male_iter->at[0] + male_iter->at[1]);
+            mean_at += x;
+            ss_at += x*x;
+            
+            x = 0.5 * (male_iter->bt[0] + male_iter->bt[1]);
+            mean_bt += x;
+            ss_bt += x*x;
+            
+            x = 0.5 * (male_iter->ap[0] + male_iter->ap[1]);
+            mean_ap += x;
+            ss_ap += x*x;
+            
+            x = 0.5 * (male_iter->bp[0] + male_iter->bp[1]);
+            mean_bp += x;
+            ss_bp += x*x;
+            
+            x = 0.5 * (male_iter->anu[0] + male_iter->anu[1]);
+            mean_anu += x;
+            ss_anu += x*x;
+            
+            x = 0.5 * (male_iter->bnu[0] + male_iter->bnu[1]);
+            mean_bnu += x;
+            ss_bnu += x*x;
+            
+            x = 0.5 * (male_iter->axo[0] + male_iter->axo[1]);
+            mean_axo += x;
+            ss_axo += x*x;
+            
+            x = 0.5 * (male_iter->bxo[0] + male_iter->bxo[1]);
+            mean_bxo += x;
+            ss_bxo += x*x;
+        }
+    } // end for site iter
+    mean_an /= n;
+    mean_bn /= n;
+    mean_ax /= n;
+    mean_bx /= n;
+    mean_at /= n;
+    mean_bt /= n;
+    mean_ap /= n;
+    mean_bp /= n;
+    mean_anu /= n;
+    mean_bnu /= n;
+    mean_axo /= n;
+    mean_bxo /= n;
+    mean_resources /= n;
+    
+    double var_an = ss_an/n - mean_an * mean_an; 
+    double var_bn = ss_bn/n - mean_bn * mean_bn; 
+    double var_ax = ss_ax/n - mean_ax * mean_ax; 
+    double var_bx = ss_bx/n - mean_bx * mean_bx; 
+    double var_at = ss_at/n - mean_at * mean_at; 
+    double var_bt = ss_bt/n - mean_bt * mean_bt; 
+    double var_ap = ss_ap/n - mean_ap * mean_ap; 
+    double var_bp = ss_bp/n - mean_bp * mean_bp; 
+    double var_anu = ss_anu/n - mean_anu * mean_anu; 
+    double var_bnu = ss_bnu/n - mean_bnu * mean_bnu; 
+    double var_axo = ss_axo/n - mean_axo * mean_axo; 
+    double var_bxo = ss_bxo/n - mean_bxo * mean_bxo; 
+    double var_resources = ss_resources / n - 
+        mean_resources * mean_resources;
+
+    data_file << generation << ";"
+        << mean_an << ";" 
+        << mean_bn << ";" 
+        << mean_ax << ";" 
+        << mean_bx << ";" 
+        << mean_at << ";" 
+        << mean_bt << ";" 
+        << mean_ap << ";" 
+        << mean_bp << ";" 
+        << mean_anu << ";" 
+        << mean_bnu << ";" 
+        << mean_axo << ";" 
+        << mean_bxo << ";" 
+        << mean_resources << ";" 
+        << var_an << ";" 
+        << var_bn << ";" 
+        << var_ax << ";" 
+        << var_bx << ";" 
+        << var_at << ";" 
+        << var_bt << ";" 
+        << var_ap << ";" 
+        << var_bp << ";" 
+        << var_anu << ";" 
+        << var_bnu << ";" 
+        << var_axo << ";" 
+        << var_bxo << ";" 
+        << var_resources << ";" 
+        << n << ";" 
+        << n_female << ";" 
+        << (n - n_female) << ";" 
+        << std::endl;
+} // end write_data
 
 void Simulation::write_data_headers()
 {
-    data_file << std::endl;
+    data_file << "generation" << ";"
+        << "mean_an" << ";" 
+        << "mean_bn" << ";" 
+        << "mean_ax" << ";" 
+        << "mean_bx" << ";" 
+        << "mean_at" << ";" 
+        << "mean_bt" << ";" 
+        << "mean_ap" << ";" 
+        << "mean_bp" << ";" 
+        << "mean_anu" << ";" 
+        << "mean_bnu" << ";" 
+        << "mean_axo" << ";" 
+        << "mean_bxo" << ";" 
+        << "mean_resources" << ";" 
+        << "var_an" << ";" 
+        << "var_bn" << ";" 
+        << "var_ax" << ";" 
+        << "var_bx" << ";" 
+        << "var_at" << ";" 
+        << "var_bt" << ";" 
+        << "var_ap" << ";" 
+        << "var_bp" << ";" 
+        << "var_anu" << ";" 
+        << "var_bnu" << ";" 
+        << "var_axo" << ";" 
+        << "var_bxo" << ";" 
+        << "var_resources" << ";" 
+        << "n" << ";"
+        << "n_female" << ";"
+        << "n_male" << ";"
+        << std::endl;
 
     data_file_migration << "generation;ecological_time;sex;site;n;resources;" << std::endl;
 } // end write_data_headers()

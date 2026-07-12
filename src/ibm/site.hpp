@@ -13,6 +13,8 @@ class Site
         std::vector<Individual> departing_females;
         std::vector<Individual> departing_males;
 
+        unsigned n_mortality{0};
+
         double resources{0.0};
         double predator_density{0.0};
 
