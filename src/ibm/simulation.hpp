@@ -45,6 +45,9 @@ class Simulation
         unsigned int ecological_time_idx{0};
 
         void reproduce();
+
+        void reproduce_from_site(Site const &site);
+
         void write_data();
         void write_data_migration();
         void write_parameters();

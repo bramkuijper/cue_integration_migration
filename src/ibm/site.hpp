@@ -10,6 +10,8 @@ class Site
     public:
         std::vector<Individual> females;
         std::vector<Individual> males;
+        std::vector<Individual> juvenile_females;
+        std::vector<Individual> juvenile_males;
         std::vector<Individual> departing_females;
         std::vector<Individual> departing_males;
 
@@ -17,6 +19,8 @@ class Site
 
         double resources{0.0};
         double predator_density{0.0};
+
+        bool has_positive_density();
 
         // initiation constructor
         Site(

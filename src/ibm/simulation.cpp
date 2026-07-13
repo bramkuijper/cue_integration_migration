@@ -30,6 +30,8 @@ void Simulation::run()
 {
     write_data_headers();
 
+    initialise_sites();
+
     // have individuals survive dependent on their 
     // ornaments and preferences
     // then choose mates
@@ -50,6 +52,8 @@ void Simulation::run()
             // go around all sites and move individuals around
             ready_to_migrate();
             move_between_sites();
+
+            write_data_migration();
         }
 
         // replace the current generation
@@ -64,42 +68,41 @@ void Simulation::run()
 // check whether simulation is extinct
 bool Simulation::is_extinct()
 {
-    return sites[par.n_sites - 1].males.size() < 1
-            ||
-        sites[par.n_sites - 1].females.size() < 1;
+    for (auto site_iterator{sites.begin()};
+            site_iterator != sites.end();
+            ++site_iterator)
+    {
+        if (site_iterator->has_positive_density())
+        {
+            return false;
+        }
+    }
+    
+    return true;
 }
 
-// reproduction
-// only individuals in the final site 
-// contribute to fitness
-// with reproduction sexual and dependent
-// on the remaining resources of each individual
-void Simulation::reproduce()
+// produce new generation from picked site (the furthest)
+void Simulation::reproduce_from_site(Site const &site)
 {
-    if (is_extinct())
-    {
-        write_data();
-        write_parameters();
-        exit(1);
-    }
-
-
     std::vector <double> male_resource_distribution{};
     std::vector <double> female_resource_distribution{};
+
+    sites[0].juvenile_males.clear();
+    sites[0].juvenile_females.clear();
 
     // get resource distribution among all the females
     // with sites towards the back having enormous advantage
     // over sites at the front
-    for (auto female_iter{sites[par.n_sites - 1].females.begin()};
-            female_iter != sites[par.n_sites - 1].females.end();
+    for (auto female_iter{site.females.begin()};
+            female_iter != site.females.end();
             ++female_iter)
     {
         female_resource_distribution.push_back(female_iter->resources);
     }
 
     // get resource distribution among all the males
-    for (auto male_iter{sites[par.n_sites - 1].males.begin()};
-            male_iter != sites[par.n_sites - 1].males.end();
+    for (auto male_iter{site.males.begin()};
+            male_iter != site.males.end();
             ++male_iter)
     {
         male_resource_distribution.push_back(male_iter->resources);
@@ -119,8 +122,8 @@ void Simulation::reproduce()
     // clear all females and males in the first patch
     assert(par.n_sites > 1);
 
-    sites[0].females.clear();
-    sites[0].males.clear();
+    sites[0].juvenile_females.clear();
+    sites[0].juvenile_males.clear();
 
     for (unsigned int newborn_idx{0};
             newborn_idx < par.N;
@@ -130,20 +133,56 @@ void Simulation::reproduce()
         female_idx = female_sampler(rng_r);
 
         Individual offspring(
-                sites[par.n_sites - 1].females[female_idx],
-                sites[par.n_sites - 1].males[male_idx],
+                site.females[female_idx],
+                site.males[male_idx],
                 rng_r,
                 par);
 
         if (offspring.is_female)
         {
-            sites[0].females.push_back(offspring);
+            sites[0].juvenile_females.push_back(offspring);
         }
         else
         {
-            sites[0].males.push_back(offspring);
+            sites[0].juvenile_males.push_back(offspring);
         }
     }
+}
+
+// reproduction
+// only individuals in the final site 
+// contribute to fitness
+// with reproduction sexual and dependent
+// on the remaining resources of each individual
+void Simulation::reproduce()
+{
+    if (is_extinct())
+    {
+        write_data();
+        write_parameters();
+        exit(1);
+    }
+
+    // go backwards and the furthest possible site is allowed to reproduce
+    for (unsigned site_idx{par.n_sites - 1};
+            site_idx >= 0;
+            --site_idx)
+    {
+        // remotest possible site positive density?
+        // then reproduce from this site and break out of the loop
+        if (sites[site_idx].has_positive_density())
+        {
+            reproduce_from_site(sites[site_idx]);
+            break;
+        }
+    }
+
+    assert(static_cast<unsigned>(sites[0].juvenile_males.size() +
+            sites[0].juvenile_females.size()) == par.N);
+
+    sites[0].females = sites[0].juvenile_females;
+    sites[0].males = sites[0].juvenile_males;
+
     // now remove all the other females and males from the other sites
     for (unsigned site_idx{1};
             site_idx < par.n_sites;

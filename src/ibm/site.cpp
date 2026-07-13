@@ -26,3 +26,9 @@ void Site::operator=(Site const &other)
     resources = other.resources;
     predator_density = other.predator_density;
 }
+
+
+bool Site::has_positive_density()
+{
+    return females.size() > 0 && males.size() > 0;
+}
