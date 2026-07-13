@@ -3,6 +3,7 @@
 
 #include <string>
 
+// parameters and their default values
 class Parameters
 {
     public:
@@ -11,6 +12,8 @@ class Parameters
 
         // duration of the simulation
         unsigned int max_generation{100};
+        
+        unsigned int n_sites{10};
 
         // time steps in season
         unsigned int max_season_time_steps{50};
@@ -24,7 +27,6 @@ class Parameters
         double init_resources_site{10.0};
         double init_predator_density{10.0};
 
-        unsigned int n_sites{10};
 
         double mu_an{0.02};
         double an_init{0.0};

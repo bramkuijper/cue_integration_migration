@@ -67,6 +67,7 @@ for i in range(0,nrep):
 
                                 job_str = f"{exe} " +\
                                             f"{file_name} " +\
+                                            f"{n_sites} " +\
                                             f"{max_generation} " +\
                                             f"{max_season_time_steps} " +\
                                             f"{mu_an} " +\

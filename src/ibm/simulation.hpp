@@ -56,6 +56,8 @@ class Simulation
 
         void move_between_sites();
 
+        bool is_extinct();
+
         double group_size_flight_survival(
                 double const resources,
                 unsigned int const group_size); 

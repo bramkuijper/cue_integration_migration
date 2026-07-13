@@ -61,7 +61,13 @@ void Simulation::run()
         
 } // end run_simulation()
 
-// TODO: dealing with resources
+// check whether simulation is extinct
+bool Simulation::is_extinct()
+{
+    return sites[par.n_sites - 1].males.size() < 1
+            ||
+        sites[par.n_sites - 1].females.size() < 1;
+}
 
 // reproduction
 // only individuals in the final site 
@@ -70,10 +76,20 @@ void Simulation::run()
 // on the remaining resources of each individual
 void Simulation::reproduce()
 {
+    if (is_extinct())
+    {
+        write_data();
+        write_parameters();
+        exit(1);
+    }
+
+
     std::vector <double> male_resource_distribution{};
     std::vector <double> female_resource_distribution{};
-    
+
     // get resource distribution among all the females
+    // with sites towards the back having enormous advantage
+    // over sites at the front
     for (auto female_iter{sites[par.n_sites - 1].females.begin()};
             female_iter != sites[par.n_sites - 1].females.end();
             ++female_iter)
@@ -720,5 +736,48 @@ void Simulation::write_parameters()
     data_file << std::endl << std::endl
         << "seed;" << seed << ";" << std::endl
         << "N;" << par.N << ";" << std::endl
-        << "max_generation;" << par.max_generation << ";" << std::endl;
+        << "max_generation;" << par.max_generation << ";" << std::endl
+        << "max_season_time_steps;" << par.max_season_time_steps << ";" << std::endl
+        << "n_sites;" << par.n_sites << ";" << std::endl
+        << "data_print_interval;" << par.data_print_interval << ";" << std::endl
+        << "init_resources_site;" << par.init_resources_site << ";" << std::endl
+        << "init_predator_density;" << par.init_predator_density << ";" << std::endl
+        << "mu_an;" << par.mu_an << ";" << std::endl
+        << "an_init;" << par.an_init << ";" << std::endl
+        << "mu_bn;" << par.mu_bn << ";" << std::endl
+        << "bn_init;" << par.bn_init << ";" << std::endl
+       
+        << "mu_ax;" << par.mu_ax << ";" << std::endl
+        << "ax_init;" << par.ax_init << ";" << std::endl
+        << "mu_bx;" << par.mu_bx << ";" << std::endl
+        << "bx_init;" << par.bx_init << ";" << std::endl
+        
+        << "mu_at;" << par.mu_at << ";" << std::endl
+        << "at_init;" << par.at_init << ";" << std::endl
+        << "mu_bt;" << par.mu_bt << ";" << std::endl
+        << "bt_init;" << par.bt_init << ";" << std::endl
+
+        << "mu_ap;" << par.mu_ap << ";" << std::endl
+        << "ap_init;" << par.ap_init << ";" << std::endl
+        << "mu_bp;" << par.mu_bp << ";" << std::endl
+        << "bp_init;" << par.bp_init << ";" << std::endl
+       
+        << "mu_anu;" << par.mu_anu << ";" << std::endl
+        << "anu_init;" << par.anu_init << ";" << std::endl
+        << "mu_bnu;" << par.mu_bnu << ";" << std::endl
+        << "bnu_init;" << par.bnu_init << ";" << std::endl
+
+        << "mu_axo;" << par.mu_axo << ";" << std::endl
+        << "axo_init;" << par.axo_init << ";" << std::endl
+        << "mu_bxo;" << par.mu_bxo << ";" << std::endl
+        << "bxo_init;" << par.bxo_init << ";" << std::endl
+        
+        << "sdmu;" << par.sdmu << ";" << std::endl
+        << "pr_base_flight_survive;" << par.pr_base_flight_survive << ";" << std::endl
+        << "flight_survive_scale;" << par.flight_survive_scale << ";" << std::endl
+        << "flight_survive_power;" << par.flight_survive_power << ";" << std::endl
+        << "flight_survive_max_size;" << par.flight_survive_max_size << ";" << std::endl
+        << "min_resources;" << par.min_resources << ";" << std::endl
+        << "f;" << par.f << ";" << std::endl
+        << "g;" << par.g << ";" << std::endl;
 }
