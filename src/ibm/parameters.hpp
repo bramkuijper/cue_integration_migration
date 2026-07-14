@@ -32,37 +32,37 @@ class Parameters
         double an_init{0.0};
 
         double mu_bn{0.02};
-        double bn_init{0.02};
+        double bn_init{0.0};
         
         double mu_ax{0.02};
         double ax_init{0.0};
 
         double mu_bx{0.02};
-        double bx_init{0.02};
+        double bx_init{0.0};
         
         double mu_at{0.02};
         double at_init{0.0};
 
         double mu_bt{0.02};
-        double bt_init{0.02};
+        double bt_init{0.0};
         
         double mu_ap{0.02};
         double ap_init{0.0};
 
         double mu_bp{0.02};
-        double bp_init{0.02};
+        double bp_init{0.0};
 
         double mu_anu{0.02};
         double anu_init{0.0};
 
         double mu_bnu{0.02};
-        double bnu_init{0.02};
+        double bnu_init{0.0};
         
         double mu_axo{0.02};
         double axo_init{0.0};
 
         double mu_bxo{0.02};
-        double bxo_init{0.02};
+        double bxo_init{0.0};
 
         double sdmu{0.02};
 

@@ -38,6 +38,7 @@ class Simulation
         std::vector <Site> sites{};
 
         std::vector <double> average_group_size_per_site{};
+        std::vector <double> average_pr_fly_per_site{};
 
         // current generation
         unsigned int generation{0};

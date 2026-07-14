@@ -15,7 +15,8 @@ Simulation::Simulation(Parameters const &params) :
     data_file_migration{par.file_name + "_migration"}, // initialize the data file to write output to
     uniform{0.0,1.0}, // initialize the uniform distribution 
     sites(par.n_sites,Site(0,0,params)), // initialize all the sites
-    average_group_size_per_site(par.n_sites,0.0) // vector for group flight stats
+    average_group_size_per_site(par.n_sites,0.0), // vector for group flight stats
+    average_pr_fly_per_site(par.n_sites,0.0) // vector for group flight stats
 {}
 
 void Simulation::initialise_sites()
@@ -53,14 +54,12 @@ void Simulation::run()
             // go around all sites and move individuals around
             ready_to_migrate();
             move_between_sites();
-
         }
 
         // replace the current generation
         reproduce();
-
     } // end for unsigned int generation
-   
+    
     write_parameters();
         
 } // end run_simulation()
@@ -198,6 +197,12 @@ void Simulation::reproduce()
 // migrate to a different site
 void Simulation::ready_to_migrate()
 {
+    for (unsigned site_idx{0};
+            site_idx < par.n_sites;
+            ++site_idx)
+    {
+        average_pr_fly_per_site[site_idx] = 0.0;
+    }
     // aux variable reflecting the densit
     // before take-off of a site
     unsigned dens;
@@ -207,6 +212,9 @@ void Simulation::ready_to_migrate()
     unsigned n_airborne;
 
     double resources_airborne;
+
+    double pr_fly;
+
 
     for (unsigned site_idx{0};
             site_idx < par.n_sites - 1; // final site is site of arrival
@@ -230,12 +238,13 @@ void Simulation::ready_to_migrate()
                 male_iter != sites[site_idx].males.end();
                 ++male_iter)
         {
-            if (uniform(rng_r) < 
-                    male_iter->pr_fly(
+            pr_fly = male_iter->pr_fly(
                         dens,
                         male_iter->resources,
                         ecological_time_idx,
-                        sites[site_idx].predator_density))
+                        sites[site_idx].predator_density);
+
+            if (uniform(rng_r) < pr_fly)
             {
                 male_iter->resources -= par.f;
                 ++n_airborne;
@@ -247,18 +256,22 @@ void Simulation::ready_to_migrate()
                 male_iter->resources += par.g;
             }
 
+            average_pr_fly_per_site[site_idx] += pr_fly;
+
         } // end male_iter
         
         for (auto female_iter{sites[site_idx].females.begin()};
                 female_iter != sites[site_idx].females.end();
                 ++female_iter)
         {
-            if (uniform(rng_r) < 
-                    female_iter->pr_fly(
+
+            pr_fly = female_iter->pr_fly(
                         dens,
                         female_iter->resources,
                         ecological_time_idx,
-                        sites[site_idx].predator_density))
+                        sites[site_idx].predator_density);
+
+            if (uniform(rng_r) < pr_fly)
             {
                 female_iter->resources -= par.f;
                 ++n_airborne;
@@ -269,6 +282,8 @@ void Simulation::ready_to_migrate()
             {
                 female_iter->resources += par.g;
             }
+            
+            average_pr_fly_per_site[site_idx] += pr_fly;
         } // end female_iter
   
         // make average o
@@ -323,6 +338,13 @@ void Simulation::ready_to_migrate()
                 ++female_iter;
             }
         } // end for male iter()
+   
+
+    // make average
+    average_pr_fly_per_site[site_idx] = dens == 0 ?
+        0.0
+        :
+        average_pr_fly_per_site[site_idx] / dens;
     } // end for site idx
 } // end migrate()
 
@@ -483,6 +505,7 @@ void Simulation::write_data_migration()
             << site_idx << ";"
             << sites[site_idx].males.size() << ";" 
             << average_group_size_per_site[site_idx] << ";" 
+            << average_pr_fly_per_site[site_idx] << ";" 
             << sites[site_idx].n_mortality << ";" 
             << resources << ";"
             << std::endl;
@@ -496,7 +519,7 @@ void Simulation::write_data_migration()
             resources += female_iter->resources;
         }
 
-        std::cout << sites[site_idx].females.size()  << std::endl;
+//        std::cout << sites[site_idx].females.size()  << std::endl;
 
         data_file_migration << generation << ";"
             << ecological_time_idx << ";"
@@ -504,6 +527,7 @@ void Simulation::write_data_migration()
             << site_idx << ";"
             << sites[site_idx].females.size() << ";" 
             << average_group_size_per_site[site_idx] << ";" 
+            << average_pr_fly_per_site[site_idx] << ";" 
             << sites[site_idx].n_mortality << ";" 
             << resources << ";"
             << std::endl;
@@ -769,7 +793,7 @@ void Simulation::write_data_headers()
         << "n_male" << ";"
         << std::endl;
 
-    data_file_migration << "generation;ecological_time;sex;site;n;av_group_size;n_dead;resources;" << std::endl;
+    data_file_migration << "generation;ecological_time;sex;site;n;av_flight_group_size;av_pr_fly;n_dead;resources;" << std::endl;
 } // end write_data_headers()
 
 void Simulation::write_parameters()

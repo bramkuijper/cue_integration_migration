@@ -161,7 +161,7 @@ double Individual::pr_depart(
     return(1.0 / (1.0 + std::exp(-exponent)));
 } // end pr_depart
 
-
+// probability to actually take off
 double Individual::pr_fly(
                 unsigned const n, // density
                 double const x, // resources
