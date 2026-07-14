@@ -49,11 +49,11 @@ void Simulation::run()
                 ecological_time_idx < par.max_season_time_steps;
                 ++ecological_time_idx)
         {
+            write_data_migration();
             // go around all sites and move individuals around
             ready_to_migrate();
             move_between_sites();
 
-            write_data_migration();
         }
 
         // replace the current generation
@@ -191,6 +191,7 @@ void Simulation::reproduce()
         sites[site_idx].females.clear();
         sites[site_idx].males.clear();
     }
+
 } // end reproduce()
 
 // evaluate an individual's readiness to 
@@ -495,7 +496,8 @@ void Simulation::write_data_migration()
             resources += female_iter->resources;
         }
 
-        
+        std::cout << sites[site_idx].females.size()  << std::endl;
+
         data_file_migration << generation << ";"
             << ecological_time_idx << ";"
             << "female;" 
@@ -767,7 +769,7 @@ void Simulation::write_data_headers()
         << "n_male" << ";"
         << std::endl;
 
-    data_file_migration << "generation;ecological_time;sex;site;n;resources;" << std::endl;
+    data_file_migration << "generation;ecological_time;sex;site;n;av_group_size;n_dead;resources;" << std::endl;
 } // end write_data_headers()
 
 void Simulation::write_parameters()
