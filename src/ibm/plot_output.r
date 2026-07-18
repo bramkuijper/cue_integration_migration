@@ -38,23 +38,22 @@ transform.sym  <- function(x)
 
 jsonstuff <- '[
     {"xvar" : "generation",
-        "yvar" : ["mean_a_resource","mean_b_resource"]
+        "yvar" : ["mean_an","mean_bn"]
     },
     {"xvar" : "generation",
-        "yvar" : ["mean_a_t","mean_b_t"]
+        "yvar" : ["mean_ax","mean_bx"]
     },
     {"xvar" : "generation",
-        "yvar" : ["mean_a_qown","mean_b_qown"]
+        "yvar" : ["mean_at","mean_bt"]
     },
     {"xvar" : "generation",
-        "yvar" : ["mean_a_qother","mean_b_qother"]
+        "yvar" : ["mean_ap","mean_bp"]
     },
     {"xvar" : "generation",
-        "yvar" : ["mean_a_action_other","mean_b_action_other"]
+        "yvar" : ["mean_anu","mean_bnu"]
     },
-    {
-        "xvar" : "generation",
-        "yvar" : "mean_n_per_group"
+    {"xvar" : "generation",
+        "yvar" : ["mean_axo","mean_bxo"]
     },
     {
         "xvar" : "generation",
@@ -62,15 +61,15 @@ jsonstuff <- '[
     },
     {
         "xvar" : "generation",
-        "yvar" : "var_resources"
+        "yvar" : ["n","n_female","n_male"]
     },
     {
         "xvar" : "generation",
-        "yvar" : "total_nests_predated_season"
+        "yvar" : ["var_resources","var_an","var_ax","var_at","var_ap","var_anu","var_axo"]
     },
     {
         "xvar" : "generation",
-        "yvar" : "mean_foraging_per_group"
+        "yvar" : ["var_bn","var_bx","var_bt","var_bp","var_bnu","var_bxo"]
     }
 ]
 '
