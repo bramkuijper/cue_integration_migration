@@ -66,9 +66,9 @@ class Individual
 
         // start flying yes or no
         double pr_fly(
-                unsigned const n, // density
+                double const fraction_of_total_dens, // density
                 double const x, // resources
-                unsigned const t, // time
+                double const fraction_of_season, // time
                 double const p // predator density
                 );
 };

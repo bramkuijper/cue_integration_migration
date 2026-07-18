@@ -197,6 +197,7 @@ void Simulation::reproduce()
 // migrate to a different site
 void Simulation::ready_to_migrate()
 {
+    // reset flight stats
     for (unsigned site_idx{0};
             site_idx < par.n_sites;
             ++site_idx)
@@ -205,7 +206,7 @@ void Simulation::ready_to_migrate()
     }
     // aux variable reflecting the densit
     // before take-off of a site
-    unsigned dens;
+    double dens;
 
     // aux variable tracking
     // current number airborne in a site
@@ -215,13 +216,16 @@ void Simulation::ready_to_migrate()
 
     double pr_fly;
 
+    double fraction_of_season = static_cast<double>(
+            ecological_time_idx) / par.max_season_time_steps;
+
 
     for (unsigned site_idx{0};
             site_idx < par.n_sites - 1; // final site is site of arrival
             ++site_idx)
     {
-        dens = static_cast<unsigned>(sites[site_idx].females.size() +
-                sites[site_idx].males.size()); 
+        dens = static_cast<double>(sites[site_idx].females.size() +
+                sites[site_idx].males.size()) / par.N; 
 
         // check whether departing individuals have 
         // indeed departed
@@ -241,7 +245,7 @@ void Simulation::ready_to_migrate()
             pr_fly = male_iter->pr_fly(
                         dens,
                         male_iter->resources,
-                        ecological_time_idx,
+                        fraction_of_season,
                         sites[site_idx].predator_density);
 
             if (uniform(rng_r) < pr_fly)
@@ -268,7 +272,7 @@ void Simulation::ready_to_migrate()
             pr_fly = female_iter->pr_fly(
                         dens,
                         female_iter->resources,
-                        ecological_time_idx,
+                        fraction_of_season,
                         sites[site_idx].predator_density);
 
             if (uniform(rng_r) < pr_fly)
@@ -381,6 +385,7 @@ void Simulation::move_between_sites()
             ++site_idx)
     {
         average_group_size_per_site[site_idx] = 0.0;
+        sites[site_idx].n_mortality = 0.0;
     }
 
 
@@ -490,8 +495,13 @@ void Simulation::write_data_migration()
 {
     // aux variable to keep track of resources
     double resources;
+
+    double frac_pop;
+
     for (unsigned site_idx{0}; site_idx < par.n_sites; ++site_idx)
     {
+        resources = 0;
+
         for (auto male_iter{sites[site_idx].males.begin()};
                     male_iter != sites[site_idx].males.end();
                     ++male_iter)
@@ -499,11 +509,21 @@ void Simulation::write_data_migration()
             resources += male_iter->resources;
         }
 
+        if (sites[site_idx].males.size() > 0)
+        {
+            // calculate per-capita resource levels
+            resources /= static_cast<double>(
+                    sites[site_idx].males.size());
+        }
+
+        frac_pop = static_cast<double>(sites[site_idx].males.size()) /
+            par.N;
+
         data_file_migration << generation << ";"
             << ecological_time_idx << ";"
             << "male;" 
             << site_idx << ";"
-            << sites[site_idx].males.size() << ";" 
+            << frac_pop << ";" 
             << average_group_size_per_site[site_idx] << ";" 
             << average_pr_fly_per_site[site_idx] << ";" 
             << sites[site_idx].n_mortality << ";" 
@@ -518,14 +538,22 @@ void Simulation::write_data_migration()
         {
             resources += female_iter->resources;
         }
+        
+        frac_pop = static_cast<double>(sites[site_idx].females.size()) /
+            par.N;
 
-//        std::cout << sites[site_idx].females.size()  << std::endl;
+        if (sites[site_idx].females.size() > 0)
+        {
+            // calculate per-capita resource levels
+            resources /= static_cast<double>(
+                    sites[site_idx].females.size());
+        }
 
         data_file_migration << generation << ";"
             << ecological_time_idx << ";"
             << "female;" 
             << site_idx << ";"
-            << sites[site_idx].females.size() << ";" 
+            << frac_pop << ";" 
             << average_group_size_per_site[site_idx] << ";" 
             << average_pr_fly_per_site[site_idx] << ";" 
             << sites[site_idx].n_mortality << ";" 

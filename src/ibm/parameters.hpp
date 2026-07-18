@@ -8,7 +8,7 @@ class Parameters
 {
     public:
         // population size, which should be even number
-        unsigned int N{5000};
+        unsigned int N{2500};
 
         // duration of the simulation
         unsigned int max_generation{100};

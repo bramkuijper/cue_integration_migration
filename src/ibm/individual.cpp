@@ -163,15 +163,22 @@ double Individual::pr_depart(
 
 // probability to actually take off
 double Individual::pr_fly(
-                unsigned const n, // density
+                double const fraction_of_total_dens, // density
                 double const x, // resources
-                unsigned const t, // time
+                double const fraction_of_season, // time
                 double const p) // predator density
 {
-    double exponent{0.5 * (bn[0] + bn[1]) * (n  - 0.5 * (an[0] + an[1]))
-        + 0.5 * (bx[0] + bx[1]) * (x - 0.5 * (ax[0] + ax[1]))
-        + 0.5 * (bt[0] + bt[1]) * (t - 0.5 * (at[0] + at[1]))
-        + 0.5 * (bp[0] + bp[1]) * (p - 0.5 * (ap[0] + ap[1]))};
+    double exponent{
+            0.5 * (bn[0] + bn[1]) * 
+                (fraction_of_total_dens  - 0.5 * (an[0] + an[1])) +
+
+            0.5 * (bx[0] + bx[1]) * (x - 0.5 * (ax[0] + ax[1])) +
+
+            0.5 * (bt[0] + bt[1]) * 
+                (fraction_of_season - 0.5 * (at[0] + at[1])) +
+
+            0.5 * (bp[0] + bp[1]) * (p - 0.5 * (ap[0] + ap[1]))
+    };
 
     return(1.0 / (1.0 + std::exp(-exponent)));
 
