@@ -40,20 +40,23 @@ void Simulation::run()
             generation <= par.max_generation; 
             ++generation)
     {
-        // write statistics to file
-        if (generation % par.data_print_interval == 0)
-        {
-            write_data();
-        }
 
         for (ecological_time_idx = 0;
                 ecological_time_idx < par.max_season_time_steps;
                 ++ecological_time_idx)
         {
-            write_data_migration();
             // go around all sites and move individuals around
             ready_to_migrate();
             move_between_sites();
+            
+            write_data_migration();
+            reset_migration_stats();
+        }
+        
+        // write statistics to file
+        if (generation % par.data_print_interval == 0)
+        {
+            write_data();
         }
 
         // replace the current generation
@@ -85,9 +88,6 @@ void Simulation::reproduce_from_site(Site const &site)
 {
     std::vector <double> male_resource_distribution{};
     std::vector <double> female_resource_distribution{};
-
-    sites[0].juvenile_males.clear();
-    sites[0].juvenile_females.clear();
 
     // get resource distribution among all the females
     // with sites towards the back having enormous advantage
@@ -176,8 +176,9 @@ void Simulation::reproduce()
         }
     }
 
-    assert(static_cast<unsigned>(sites[0].juvenile_males.size() +
-            sites[0].juvenile_females.size()) == par.N);
+    assert(static_cast<unsigned>(
+                sites[0].juvenile_males.size() +
+                sites[0].juvenile_females.size()) == par.N);
 
     sites[0].females = sites[0].juvenile_females;
     sites[0].males = sites[0].juvenile_males;
@@ -197,13 +198,6 @@ void Simulation::reproduce()
 // migrate to a different site
 void Simulation::ready_to_migrate()
 {
-    // reset flight stats
-    for (unsigned site_idx{0};
-            site_idx < par.n_sites;
-            ++site_idx)
-    {
-        average_pr_fly_per_site[site_idx] = 0.0;
-    }
     // aux variable reflecting the densit
     // before take-off of a site
     double dens;
@@ -214,7 +208,7 @@ void Simulation::ready_to_migrate()
 
     double resources_airborne;
 
-    double pr_fly;
+    double pr_fly{0.0};
 
     double fraction_of_season = static_cast<double>(
             ecological_time_idx) / par.max_season_time_steps;
@@ -226,6 +220,11 @@ void Simulation::ready_to_migrate()
     {
         dens = static_cast<double>(sites[site_idx].females.size() +
                 sites[site_idx].males.size()) / par.N; 
+
+        if (ecological_time_idx == 0 && site_idx > 0)
+        {
+            assert(dens == 0);
+        }
 
         // check whether departing individuals have 
         // indeed departed
@@ -341,14 +340,12 @@ void Simulation::ready_to_migrate()
             {
                 ++female_iter;
             }
-        } // end for male iter()
+        } // end for female iter()
    
-
-    // make average
-    average_pr_fly_per_site[site_idx] = dens == 0 ?
-        0.0
-        :
-        average_pr_fly_per_site[site_idx] / dens;
+        average_pr_fly_per_site[site_idx] = dens == 0 ?
+            0.0
+            :
+            average_pr_fly_per_site[site_idx] / dens;
     } // end for site idx
 } // end migrate()
 
@@ -373,21 +370,25 @@ double Simulation::group_size_flight_survival(
     return(pr_survive);
 } // end group_size_flight_survival
 
+void Simulation::reset_migration_stats()
+{
+    for (unsigned site_idx{0};
+            site_idx < par.n_sites;
+            ++site_idx)
+    {
+        average_group_size_per_site[site_idx] = 0.0;
+        average_pr_fly_per_site[site_idx] = 0.0;
+        sites[site_idx].n_mortality = 0.0;
+    }
+} // end reset_migration_stats()
+
+
 // movement from one site to another and paying costs
 void Simulation::move_between_sites()
 {
     // aux variable to store
     // current flight group size
     unsigned flight_group_size;
-
-    for (unsigned site_idx{0};
-            site_idx < par.n_sites;
-            ++site_idx)
-    {
-        average_group_size_per_site[site_idx] = 0.0;
-        sites[site_idx].n_mortality = 0.0;
-    }
-
 
     // now we need to go backwards across sites
     // to move individuals over and calculate their
@@ -559,7 +560,7 @@ void Simulation::write_data_migration()
             << sites[site_idx].n_mortality << ";" 
             << resources << ";"
             << std::endl;
-    }
+    } // end for site idx
 } // write_data_migration
 
 void Simulation::write_data()

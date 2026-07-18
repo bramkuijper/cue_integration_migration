@@ -9,7 +9,7 @@ base_name += current_time.strftime("%Y%m%d_%H%M%S")
 
 n_sites = 10
 
-max_generation = 100
+max_generation = 50000
 max_season_time_steps = 50
 
 mu_n = [0.02]
@@ -23,14 +23,14 @@ mu_bp = 0
 
 
 
-nrep = 3
+nrep = 10
 ctr = 1
 
-pr_base_flight_survive = 0.1
+pr_base_flight_survive = [0.01,0.05,0.1,0.5]
 flight_survive_scale = 0.7
 flight_survive_power = 1.0 
 
-f = [1.0]
+f = [1.0,2.0,3.0]
 g = [3.0]
 
 
@@ -60,32 +60,33 @@ for i in range(0,nrep):
 
                         for f_i in f:
                             for g_i in g:
+                                for pr_base_flight_survive_i in pr_base_flight_survive:
 
-                                file_name = f"{base_name}_{ctr}"
+                                    file_name = f"{base_name}_{ctr}"
 
-                                ctr +=1
+                                    ctr +=1
 
-                                job_str = f"{exe} " +\
-                                            f"{file_name} " +\
-                                            f"{n_sites} " +\
-                                            f"{max_generation} " +\
-                                            f"{max_season_time_steps} " +\
-                                            f"{mu_an} " +\
-                                            f"{mu_bn} " +\
-                                            f"{mu_ax} " +\
-                                            f"{mu_bx} " +\
-                                            f"{mu_at} " +\
-                                            f"{mu_bt} " +\
-                                            f"{mu_ap} " +\
-                                            f"{mu_bp} " +\
-                                            f"{mu_anu} " +\
-                                            f"{mu_bnu} " +\
-                                            f"{mu_axo} " +\
-                                            f"{mu_bxo} " +\
-                                            f"{pr_base_flight_survive} " +\
-                                            f"{flight_survive_scale} " +\
-                                            f"{flight_survive_power} " +\
-                                            f"{f_i} " +\
-                                            f"{g_i} "
+                                    job_str = f"{exe} " +\
+                                                f"{file_name} " +\
+                                                f"{n_sites} " +\
+                                                f"{max_generation} " +\
+                                                f"{max_season_time_steps} " +\
+                                                f"{mu_an} " +\
+                                                f"{mu_bn} " +\
+                                                f"{mu_ax} " +\
+                                                f"{mu_bx} " +\
+                                                f"{mu_at} " +\
+                                                f"{mu_bt} " +\
+                                                f"{mu_ap} " +\
+                                                f"{mu_bp} " +\
+                                                f"{mu_anu} " +\
+                                                f"{mu_bnu} " +\
+                                                f"{mu_axo} " +\
+                                                f"{mu_bxo} " +\
+                                                f"{pr_base_flight_survive_i} " +\
+                                                f"{flight_survive_scale} " +\
+                                                f"{flight_survive_power} " +\
+                                                f"{f_i} " +\
+                                                f"{g_i} "
 
-                                print(job_str)
+                                    print(job_str)

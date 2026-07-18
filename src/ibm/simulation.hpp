@@ -60,6 +60,8 @@ class Simulation
 
         void move_between_sites();
 
+        void reset_migration_stats();
+
         bool is_extinct();
 
         double group_size_flight_survival(
