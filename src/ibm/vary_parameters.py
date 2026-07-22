@@ -12,10 +12,10 @@ max_generation = 50000
 max_season_time_steps = 50
 
 mu_n = [0.02]
-mu_x = [0.02]
-mu_t = [0.02]
-mu_nu = [0.02]
-mu_xo = [0.02]
+mu_x = [0,0.02]
+mu_t = [0,0.02]
+mu_nu = [0,0.02]
+mu_xo = [0,0.02]
 
 mu_ap = 0
 mu_bp = 0
@@ -25,15 +25,15 @@ mu_bp = 0
 nrep = 10
 ctr = 1
 
-pr_base_flight_survive = [0.01,0.05,0.1,0.5]
+pr_base_flight_survive = [0.01]
 flight_survive_scale = 0.7
 flight_survive_power = 1.0 
 
 # cost of flying
-c_f = [1.0,2.0,3.0]
+c_f = [1.0] #[1.0,2.0,3.0]
 
 # gain through foraging
-g = [3.0]
+g = [1.0,3.0]
 
 
 exe = "./migration_cues.exe"
@@ -60,7 +60,7 @@ for i in range(0,nrep):
                         mu_axo = mu_xo_i
                         mu_bxo = mu_xo_i
 
-                        for f_i in f:
+                        for c_f_i in c_f:
                             for g_i in g:
                                 for pr_base_flight_survive_i in pr_base_flight_survive:
 
@@ -88,7 +88,7 @@ for i in range(0,nrep):
                                                 f"{pr_base_flight_survive_i} " +\
                                                 f"{flight_survive_scale} " +\
                                                 f"{flight_survive_power} " +\
-                                                f"{f_i} " +\
+                                                f"{c_f_i} " +\
                                                 f"{g_i} "
 
                                     print(job_str)
