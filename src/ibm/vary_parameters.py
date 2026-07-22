@@ -30,7 +30,10 @@ pr_base_flight_survive = [0.01,0.05,0.1,0.5]
 flight_survive_scale = 0.7
 flight_survive_power = 1.0 
 
-f = [1.0,2.0,3.0]
+# cost of flying
+c_f = [1.0,2.0,3.0]
+
+# gain through foraging
 g = [3.0]
 
 

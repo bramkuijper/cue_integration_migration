@@ -74,7 +74,7 @@ class Parameters
 
         double min_resources{0.0};
 
-        double f{3.0}; // cost of flying
+        double c_f{3.0}; // cost of flying
         double g{1.0}; // gain of foraging
 };
 
