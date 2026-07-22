@@ -253,7 +253,7 @@ void Simulation::ready_to_migrate()
 
             if (uniform(rng_r) < pr_fly)
             {
-                male_iter->resources -= par.f;
+                male_iter->resources -= par.c_f;
                 ++n_airborne;
                 resources_airborne += male_iter->resources;
                 male_iter->is_airborne = true;
@@ -280,7 +280,7 @@ void Simulation::ready_to_migrate()
 
             if (uniform(rng_r) < pr_fly)
             {
-                female_iter->resources -= par.f;
+                female_iter->resources -= par.c_f;
                 ++n_airborne;
                 resources_airborne += female_iter->resources;
                 female_iter->is_airborne = true;
@@ -360,7 +360,7 @@ double Simulation::group_size_flight_survival(
 {
     if (focal_resources < par.min_resources)
     {
-        return(0);
+        return(0.0);
     }
 
     double pr_survive{
@@ -876,6 +876,6 @@ void Simulation::write_parameters()
         << "flight_survive_power;" << par.flight_survive_power << ";" << std::endl
         << "flight_survive_max_size;" << par.flight_survive_max_size << ";" << std::endl
         << "min_resources;" << par.min_resources << ";" << std::endl
-        << "f;" << par.f << ";" << std::endl
+        << "c_f;" << par.c_f << ";" << std::endl
         << "g;" << par.g << ";" << std::endl;
 }

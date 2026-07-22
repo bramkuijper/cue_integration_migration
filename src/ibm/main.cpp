@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     params.pr_base_flight_survive = std::stod(argv[17]);
     params.flight_survive_scale = std::stod(argv[18]);
     params.flight_survive_power = std::stod(argv[19]);
-    params.f = std::stod(argv[20]);
+    params.c_f = std::stod(argv[20]);
     params.g = std::stod(argv[21]);
 
     Simulation sim{params};
