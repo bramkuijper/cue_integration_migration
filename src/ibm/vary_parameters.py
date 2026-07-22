@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-#!/usr/bin/env python3
 import datetime as dt
 
 base_name = "sim_cue_migration_"

@@ -48,9 +48,13 @@ void Simulation::run()
             // go around all sites and move individuals around
             ready_to_migrate();
             move_between_sites();
-            
-            write_data_migration();
-            reset_migration_stats();
+   
+            // write out data in the last few generations
+            if (generation >= par.max_generation - 2)
+            {
+                write_data_migration();
+                reset_migration_stats();
+            }
         }
         
         // write statistics to file
